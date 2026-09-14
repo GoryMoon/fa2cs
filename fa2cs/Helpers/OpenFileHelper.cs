@@ -27,27 +27,27 @@ namespace fa2cs.Helpers
             return false;
         }
 
-        public static void OpenAndSelectMac(string path)
+        private static void OpenAndSelectMac(string path)
         {
-            bool openInsidesOfFolder = false;
+            var openInsidesOfFolder = false;
 
             // try mac
-            string macPath = path.Replace("\\", "/"); // mac finder doesn't like backward slashes
+            var macPath = path.Replace("\\", "/"); // mac finder doesn't like backward slashes
 
             if (Directory.Exists(macPath)) // if path requested is a folder, automatically open insides of that folder
             {
                 openInsidesOfFolder = true;
             }
 
-            if (!macPath.StartsWith("\""))
+            if (!macPath.StartsWith('"'))
             {
                 macPath = "\"" + macPath;
             }
-            if (!macPath.EndsWith("\""))
+            if (!macPath.EndsWith('"'))
             {
                 macPath = macPath + "\"";
             }
-            string arguments = (openInsidesOfFolder ? "" : "-R ") + macPath;
+            var arguments = (openInsidesOfFolder ? "" : "-R ") + macPath;
             //Debug.Log("arguments: " + arguments);
             try
             {
@@ -62,12 +62,12 @@ namespace fa2cs.Helpers
             }
         }
 
-        public static void OpenAndSelectWindows(string path)
+        private static void OpenAndSelectWindows(string path)
         {
-            bool openInsidesOfFolder = false;
+            var openInsidesOfFolder = false;
 
             // try windows
-            string winPath = path.Replace("/", "\\"); // windows explorer doesn't like forward slashes
+            var winPath = path.Replace("/", "\\"); // windows explorer doesn't like forward slashes
 
             if (Directory.Exists(winPath)) // if path requested is a folder, automatically open insides of that folder
             {

@@ -5,7 +5,7 @@ namespace fa2cs.Models
 {
     public class SemanticVersion : IComparable<SemanticVersion>
     {
-        private const string tagDeliminator = "-";
+        private const string TagDeliminator = "-";
 
         public int Major { get; }
 
@@ -28,18 +28,15 @@ namespace fa2cs.Models
             Minor = TryParse(parts, 1);
             Patch = TryParse(parts, 2);
 
-            if (parts.Last().Contains(tagDeliminator))
+            if (parts.Last().Contains(TagDeliminator))
             {
-                Tag = parts.Last().Split(tagDeliminator).Last();
+                Tag = parts.Last().Split(TagDeliminator).Last();
             }
         }
 
-        private int TryParse(string[] parts, int element)
+        private static int TryParse(string[] parts, int element)
         {
-            if (parts is null)
-            {
-                throw new ArgumentNullException(nameof(parts));
-            }
+            ArgumentNullException.ThrowIfNull(parts);
 
             if (element >= parts.Length)
             {
@@ -48,9 +45,9 @@ namespace fa2cs.Models
 
             var content = parts[element];
 
-            if (content.Contains(tagDeliminator))
+            if (content.Contains(TagDeliminator))
             {
-                content = content.Split(tagDeliminator).First();
+                content = content.Split(TagDeliminator).First();
             }
 
             return int.Parse(content);
@@ -62,7 +59,7 @@ namespace fa2cs.Models
 
             if (!string.IsNullOrEmpty(Tag))
             {
-                content += tagDeliminator + Tag;
+                content += TagDeliminator + Tag;
             }
 
             return content;
@@ -72,41 +69,41 @@ namespace fa2cs.Models
         {
             if (that == null) return 1;
 
-            if (this.Major < that.Major)
+            if (Major < that.Major)
             {
                 return -1;
             }
 
-            if (this.Major > that.Major)
+            if (Major > that.Major)
             {
                 return 1;
             }
 
-            if (this.Minor < that.Minor)
+            if (Minor < that.Minor)
             {
                 return -1;
             }
-            if (this.Minor > that.Minor)
+            if (Minor > that.Minor)
             {
                 return 1;
             }
 
-            if (this.Patch < that.Patch)
+            if (Patch < that.Patch)
             {
                 return -1;
             }
 
-            if (this.Patch > that.Patch)
+            if (Patch > that.Patch)
             {
                 return 1;
             }
 
-            if(string.IsNullOrEmpty(this.Tag) && string.IsNullOrEmpty(that.Tag))
+            if(string.IsNullOrEmpty(Tag) && string.IsNullOrEmpty(that.Tag))
             {
                 return 0;
             }
 
-            if (string.IsNullOrEmpty(this.Tag))
+            if (string.IsNullOrEmpty(Tag))
             {
                 return 1;
             }
@@ -116,7 +113,7 @@ namespace fa2cs.Models
                 return -1;
             }
 
-            return this.Tag.CompareTo(that.Tag);
+            return string.Compare(Tag, that.Tag, StringComparison.Ordinal);
         }
     }
 }

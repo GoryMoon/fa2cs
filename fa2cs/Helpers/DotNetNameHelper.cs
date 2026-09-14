@@ -6,13 +6,13 @@ namespace fa2cs.Helpers
 {
     public static class DotNetNameHelper
     {
-        public static readonly IReadOnlyDictionary<string, string> DotNetNameMap = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> DotNetNameMap = new()
         {
             { "500px", "FiveHundredPX"},
             { "equals", "Equal"},
         };
 
-        private static readonly IReadOnlyDictionary<string, string> SuffixMap = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> SuffixMap = new()
         {
             { "mp", "MegaPixels" }, // Generally clearer to use the full words for this when using numbers as words
             { "k", "K"},
@@ -30,9 +30,9 @@ namespace fa2cs.Helpers
                 return string.Empty;
             }
 
-            if (DotNetNameMap.ContainsKey(name))
+            if (DotNetNameMap.TryGetValue(name, out var value))
             {
-                return DotNetNameMap[name];
+                return value;
             }
 
             // Convert underscore-seperated names to camelCase/PascalCase
@@ -41,17 +41,17 @@ namespace fa2cs.Helpers
 
             // Extract any proceeding number (C# var names can't start with numeric literals) 
             var number = new string(dotNetName.TakeWhile(char.IsDigit).ToArray());
-            if (!number.Any()) return dotNetName;
+            if (number.Length == 0) return dotNetName;
 
             // Convert number prefix to words
             var ending = string.Empty;
             if (dotNetName.Length > number.Length)
             {
-                var nameAfterNumber = dotNetName.Substring(number.Length);
+                var nameAfterNumber = dotNetName[number.Length..];
                 var lowerSuffix = nameAfterNumber.ToLower();
 
-                // Respect capitalisation of known suffixes, otherwise capitalise first char for Pascal case
-                ending = SuffixMap.ContainsKey(lowerSuffix) ? SuffixMap[lowerSuffix] : nameAfterNumber.FirstCharToUpper();
+                // Respect capitalization of known suffixes, otherwise capitalize first char for Pascal case
+                ending = SuffixMap.TryGetValue(lowerSuffix, out var value1) ? value1 : nameAfterNumber.FirstCharToUpper();
             }
             var numberAsWords = NumberToWords(int.Parse(number), number);
             return numberAsWords + ending;
@@ -66,18 +66,15 @@ namespace fa2cs.Helpers
 
             const char separator = '_';
 
-            if (number == 0)
+            switch (number)
             {
-                if (value == "00")
-                {
+                case 0 when value == "00":
                     return "ZeroZero";
-                }
-
-                return "Zero";
+                case 0:
+                    return "Zero";
+                case < 0:
+                    return "Minus" + separator + NumberToWords(Math.Abs(number), value);
             }
-
-            if (number < 0)
-                return "Minus" + separator + NumberToWords(Math.Abs(number), value);
 
             var words = string.Empty;
 

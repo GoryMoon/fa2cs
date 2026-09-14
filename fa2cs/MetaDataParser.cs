@@ -7,9 +7,9 @@ using Newtonsoft.Json.Linq;
 
 namespace fa2cs
 {
-    public class MetaDataParser
+    public static class MetaDataParser
     {
-        public IReadOnlyList<Icon> Parse(string metaDataFilePath, out SemanticVersion latestVersion)
+        public static IReadOnlyList<Icon> Parse(string metaDataFilePath, out SemanticVersion latestVersion)
         {
             if (string.IsNullOrEmpty(metaDataFilePath))
             {
@@ -58,19 +58,19 @@ namespace fa2cs
             return icons;
         }
 
-        const string changesKey = "changes";
-        const string unicodeKey = "unicode";
-        const string proFontFamiliesKey = "styles";
-        const string freeFontFamiliesKey = "free";
+        private const string ChangesKey = "changes";
+        private const string UnicodeKey = "unicode";
+        private const string ProFontFamiliesKey = "styles";
+        private const string FreeFontFamiliesKey = "free";
 
-        private Icon ParseIcon(KeyValuePair<string, JToken> element, int itemNumber, int total)
+        private static Icon ParseIcon(KeyValuePair<string, JToken> element, int itemNumber, int total)
         {
             var id = element.Key;
 
             Console.WriteLine($" --> Processing '{id}' ({itemNumber}/{total}).");
 
             var jsonToken = element.Value;
-            var unicode = jsonToken.Value<string>(unicodeKey);
+            var unicode = jsonToken.Value<string>(UnicodeKey);
 
             // Ensure that the 
             if (unicode.Length < 4)
@@ -78,15 +78,15 @@ namespace fa2cs
                 unicode = new string('0', 4 - unicode.Length) + unicode;
             }
 
-            var versions = jsonToken.Value<JArray>(changesKey)
+            var versions = jsonToken.Value<JArray>(ChangesKey)
                                     .ToObject<List<string>>();
 
-            var freeFontFamilies = jsonToken.Value<JArray>(freeFontFamiliesKey)
+            var freeFontFamilies = jsonToken.Value<JArray>(FreeFontFamiliesKey)
                                             .ToObject<List<string>>()
                                             .Select(v => Enum.Parse<Style>(v, ignoreCase: true))
                                             .ToList();
 
-            var proFontFamilies = jsonToken.Value<JArray>(proFontFamiliesKey)
+            var proFontFamilies = jsonToken.Value<JArray>(ProFontFamiliesKey)
                                            .ToObject<List<string>>()
                                            .Select(v => Enum.Parse<Style>(v, ignoreCase: true))
                                            .ToList();

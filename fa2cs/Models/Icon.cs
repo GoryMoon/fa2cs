@@ -39,9 +39,9 @@ namespace fa2cs.Models
         // Assumes that versions processed from icons.json is correctly sorted.
         public IReadOnlyList<string> Versions { get; }
 
-        public string IntroducedVersion => Versions.First();
+        public string IntroducedVersion => Versions[0];
 
-        public string LastModifiedVersion => Versions.Last();
+        public string LastModifiedVersion => Versions[^1];
 
         public IReadOnlyList<Style> FreeStyles { get; }
 
@@ -53,14 +53,14 @@ namespace fa2cs.Models
         {
             get
             {
-                List<Style> all = new List<Style>();
+                var all = new List<Style>();
                 all.AddRange(FreeStyles);
                 all.AddRange(ProStyles);
                 var distinct = all.Distinct().ToList();
 
                 distinct.Sort();
 
-                var styles = distinct.Select(d => d.ToString() + ((ProStyles.Contains(d) && !FreeStyles.Contains(d)) ? " (Pro)" : ""));
+                var styles = distinct.Select(d => d + (ProStyles.Contains(d) && !FreeStyles.Contains(d) ? " (Pro)" : ""));
 
                 return string.Join(", ", styles);
             }

@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using fa2cs.Helpers;
-using fa2cs.Models;
 
 namespace fa2cs
 {
-    public class ReadmeWriter
+    public static class ReadmeWriter
     {
-        public string Write(string fontAwesomeVersion)
+        public static string Write(string fontAwesomeVersion)
         {
             Console.Write("Generating repository readme...");
 
