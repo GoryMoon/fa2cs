@@ -4,59 +4,58 @@ using System.IO;
 using fa2cs.Helpers;
 using fa2cs.Models;
 
-namespace fa2cs
+namespace fa2cs;
+
+/// <summary>
+/// Exports a C# class file containing named and documented public properties for all icons in the Font Awesome Pro icon set.
+/// <para/>
+/// To run the code generator, you will need:
+/// <list type="bullet">
+/// <item>A paid Font Awesome subscription.</item>
+/// <item>To download the 'Font Awesome Pro for the web' archive data: https://fontawesome.com/download </item>
+/// <item>To place the 'metadata/icons.json' onto your Desktop and name it 'icons.json'</item>
+/// </list>
+/// </summary>
+internal static class MainClass
 {
-    /// <summary>
-    /// Exports a C# class file containing named and documented public properties for all icons in the Font Awesome Pro icon set.
-    /// <para/>
-    /// To run the code generator, you will need:
-    /// <list type="bullet">
-    /// <item>A paid Font Awesome subscription.</item>
-    /// <item>To download the 'Font Awesome Pro for the web' archive data: https://fontawesome.com/download </item>
-    /// <item>To place the 'metadata/icons.json' onto your Desktop and name it 'icons.json'</item>
-    /// </list>
-    /// </summary>
-    internal static class MainClass
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
+        var exportPath =
+            new DirectoryInfo(AssemblyHelper.EntryAssemblyDirectory) // $repository_path$/fa2cs/bin/$release$/$runtime$/
+                .Parent // $repository_path$/fa2cs/bin/$release$/
+                .Parent // $repository_path$/fa2cs/bin/
+                .Parent // $repository_path$/fa2cs/
+                .Parent // $repository_path$/
+                .FullName;
+
+        var importPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "icons.json");
+        if (!File.Exists(importPath))
         {
-            var exportPath =
-                new DirectoryInfo(AssemblyHelper.EntryAssemblyDirectory) // $repository_path$/fa2cs/bin/$release$/$runtime$/
-                    .Parent // $repository_path$/fa2cs/bin/$release$/
-                    .Parent // $repository_path$/fa2cs/bin/
-                    .Parent // $repository_path$/fa2cs/
-                    .Parent // $repository_path$/
-                    .FullName;
-
-            var importPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "icons.json");
-            if (!File.Exists(importPath))
-            {
-                throw new InvalidOperationException(
-                    $"fa2cs cannot generate the C# class as the 'icons.json' metadata was not found on the desktop.\n" +
-                    $"Expected location is: {importPath}");
-            }
-
-            var icons = MetaDataParser.Parse(importPath, out var version);
-
-            WriteCode(exportPath, icons, version);
-
-            WriteReadme(exportPath, version);
-
-            OpenFileHelper.OpenAndSelect(exportPath);
+            throw new InvalidOperationException(
+                $"fa2cs cannot generate the C# class as the 'icons.json' metadata was not found on the desktop.\n" +
+                $"Expected location is: {importPath}");
         }
 
-        private static void WriteCode(string exportPath, IReadOnlyList<Icon> icons, SemanticVersion version)
-        {
-            var code = CodeWriter.Write(icons, version);
+        var icons = MetaDataParser.Parse(importPath, out var version);
 
-            File.WriteAllText(Path.Combine(exportPath, "FontAwesomeIcons.cs"), code);
-        }
+        WriteCode(exportPath, icons, version);
 
-        private static void WriteReadme(string exportPath, SemanticVersion version)
-        {
-            var readme = ReadmeWriter.Write(version.ToString());
+        WriteReadme(exportPath, version);
 
-            File.WriteAllText(Path.Combine(exportPath, "Readme.md"), readme);
-        }
+        OpenFileHelper.OpenAndSelect(exportPath);
+    }
+
+    private static void WriteCode(string exportPath, IReadOnlyList<Icon> icons, SemanticVersion version)
+    {
+        var code = CodeWriter.Write(icons, version);
+
+        File.WriteAllText(Path.Combine(exportPath, "FontAwesomeIcons.cs"), code);
+    }
+
+    private static void WriteReadme(string exportPath, SemanticVersion version)
+    {
+        var readme = ReadmeWriter.Write(version.ToString());
+
+        File.WriteAllText(Path.Combine(exportPath, "Readme.md"), readme);
     }
 }

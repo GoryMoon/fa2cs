@@ -4,40 +4,38 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace fa2cs.Helpers
+namespace fa2cs.Helpers;
+
+public static class AssemblyHelper
 {
-    public static class AssemblyHelper
+    private static Assembly EntryAssembly => Assembly.GetEntryAssembly();
+
+    public static string EntryAssemblyDirectory => DirectoryForAssembly(EntryAssembly);
+
+    public static string DirectoryForAssembly(Assembly assembly)
     {
-        private static Assembly EntryAssembly => Assembly.GetEntryAssembly();
+        var codeBase = assembly.Location;
+        var uri = new UriBuilder(codeBase);
+        var path = Uri.UnescapeDataString(uri.Path);
+        return Path.GetDirectoryName(path);
+    }
 
-        public static string EntryAssemblyDirectory => DirectoryForAssembly(EntryAssembly);
+    public static Assembly GetAssemblyByName(string name)
+    {
+        return AppDomain.CurrentDomain.GetAssemblies().
+            SingleOrDefault(assembly => assembly.GetName().Name == name);
+    }
 
-        public static string DirectoryForAssembly(Assembly assembly)
+    public static IEnumerable<Type> GetLoadableTypes(this Assembly assembly)
+    {
+        ArgumentNullException.ThrowIfNull(assembly);
+        try
         {
-            var codeBase = assembly.Location;
-            var uri = new UriBuilder(codeBase);
-            var path = Uri.UnescapeDataString(uri.Path);
-            return Path.GetDirectoryName(path);
+            return assembly.GetTypes();
         }
-
-        public static Assembly GetAssemblyByName(string name)
+        catch (ReflectionTypeLoadException e)
         {
-            return AppDomain.CurrentDomain.GetAssemblies().
-                   SingleOrDefault(assembly => assembly.GetName().Name == name);
-        }
-
-        public static IEnumerable<Type> GetLoadableTypes(this Assembly assembly)
-        {
-            ArgumentNullException.ThrowIfNull(assembly);
-            try
-            {
-                return assembly.GetTypes();
-            }
-            catch (ReflectionTypeLoadException e)
-            {
-                return e.Types.Where(t => t != null);
-            }
+            return e.Types.Where(t => t != null);
         }
     }
 }
-

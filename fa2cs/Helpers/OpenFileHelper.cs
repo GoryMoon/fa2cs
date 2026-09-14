@@ -1,90 +1,88 @@
 ﻿using System;
 using System.IO;
 
-namespace fa2cs.Helpers
+namespace fa2cs.Helpers;
+
+public static class OpenFileHelper
 {
-    public static class OpenFileHelper
+    public static bool IsWindows => !(Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX);
+
+    public static bool IsLinux => false;
+
+    public static bool IsOsx => Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX;
+
+    public static bool OpenAndSelect(string path)
     {
-        public static bool IsWindows => !(Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX);
-
-        public static bool IsLinux => false;
-
-        public static bool IsOsx => Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX;
-
-        public static bool OpenAndSelect(string path)
+        if (IsOsx)
         {
-            if (IsOsx)
-            {
-                OpenAndSelectMac(path);
-                return true;
-            }
-            else if (IsWindows)
-            {
-                OpenAndSelectWindows(path);
-                return true;
-            }
-
-            return false;
+            OpenAndSelectMac(path);
+            return true;
+        }
+        else if (IsWindows)
+        {
+            OpenAndSelectWindows(path);
+            return true;
         }
 
-        private static void OpenAndSelectMac(string path)
+        return false;
+    }
+
+    private static void OpenAndSelectMac(string path)
+    {
+        var openInsidesOfFolder = false;
+
+        // try mac
+        var macPath = path.Replace("\\", "/"); // mac finder doesn't like backward slashes
+
+        if (Directory.Exists(macPath)) // if path requested is a folder, automatically open insides of that folder
         {
-            var openInsidesOfFolder = false;
-
-            // try mac
-            var macPath = path.Replace("\\", "/"); // mac finder doesn't like backward slashes
-
-            if (Directory.Exists(macPath)) // if path requested is a folder, automatically open insides of that folder
-            {
-                openInsidesOfFolder = true;
-            }
-
-            if (!macPath.StartsWith('"'))
-            {
-                macPath = "\"" + macPath;
-            }
-            if (!macPath.EndsWith('"'))
-            {
-                macPath = macPath + "\"";
-            }
-            var arguments = (openInsidesOfFolder ? "" : "-R ") + macPath;
-            //Debug.Log("arguments: " + arguments);
-            try
-            {
-                System.Diagnostics.Process.Start("open", arguments);
-            }
-            catch (System.ComponentModel.Win32Exception e)
-            {
-                // tried to open mac finder in windows
-                // just silently skip error
-                // we currently have no platform define for the current OS we are in, so we resort to this
-                e.HelpLink = ""; // do anything with this variable to silence warning about not using it
-            }
+            openInsidesOfFolder = true;
         }
 
-        private static void OpenAndSelectWindows(string path)
+        if (!macPath.StartsWith('"'))
         {
-            var openInsidesOfFolder = false;
+            macPath = "\"" + macPath;
+        }
+        if (!macPath.EndsWith('"'))
+        {
+            macPath = macPath + "\"";
+        }
+        var arguments = (openInsidesOfFolder ? "" : "-R ") + macPath;
+        //Debug.Log("arguments: " + arguments);
+        try
+        {
+            System.Diagnostics.Process.Start("open", arguments);
+        }
+        catch (System.ComponentModel.Win32Exception e)
+        {
+            // tried to open mac finder in windows
+            // just silently skip error
+            // we currently have no platform define for the current OS we are in, so we resort to this
+            e.HelpLink = ""; // do anything with this variable to silence warning about not using it
+        }
+    }
 
-            // try windows
-            var winPath = path.Replace("/", "\\"); // windows explorer doesn't like forward slashes
+    private static void OpenAndSelectWindows(string path)
+    {
+        var openInsidesOfFolder = false;
 
-            if (Directory.Exists(winPath)) // if path requested is a folder, automatically open insides of that folder
-            {
-                openInsidesOfFolder = true;
-            }
-            try
-            {
-                System.Diagnostics.Process.Start("explorer.exe", (openInsidesOfFolder ? "/root," : "/select,") + winPath);
-            }
-            catch (System.ComponentModel.Win32Exception e)
-            {
-                // tried to open win explorer in mac
-                // just silently skip error
-                // we currently have no platform define for the current OS we are in, so we resort to this
-                e.HelpLink = ""; // do anything with this variable to silence warning about not using it
-            }
+        // try windows
+        var winPath = path.Replace("/", "\\"); // windows explorer doesn't like forward slashes
+
+        if (Directory.Exists(winPath)) // if path requested is a folder, automatically open insides of that folder
+        {
+            openInsidesOfFolder = true;
+        }
+        try
+        {
+            System.Diagnostics.Process.Start("explorer.exe", (openInsidesOfFolder ? "/root," : "/select,") + winPath);
+        }
+        catch (System.ComponentModel.Win32Exception e)
+        {
+            // tried to open win explorer in mac
+            // just silently skip error
+            // we currently have no platform define for the current OS we are in, so we resort to this
+            e.HelpLink = ""; // do anything with this variable to silence warning about not using it
         }
     }
 }
-
